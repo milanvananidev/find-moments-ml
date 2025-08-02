@@ -73,12 +73,13 @@ async def upload_photo(
         return JSONResponse(status_code=400, content={"error": f"Face encoding failed: {e}"})
 
     uploaded_encoding = uploaded_encodings[0]
+    STRICT_THRESHOLD = 0.5
+
     matched_files = []
 
     for data in all_encodings:
-        result = face_recognition.compare_faces([data["encoding"]], uploaded_encoding, tolerance=tolerance)
         distance = face_recognition.face_distance([data["encoding"]], uploaded_encoding)[0]
-        if result[0]:
+        if distance < STRICT_THRESHOLD:
             matched_files.append({
                 "filename": data["filename"],
                 "distance": round(float(distance), 4),
