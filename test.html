@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face Match Upload</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    #matchedImages img {
+      max-width: 800px;
+      margin: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload Photo to Match</h2>
+  <form id="uploadForm">
+    <label for="name">Name:</label><br/>
+    <input type="text" name="name" required><br/><br/>
+    <input type="file" name="image" accept="image/*" required><br/><br/>
+    <button type="submit">Upload and Match</button>
+  </form>
+
+  <h3>Matched Images (<span id="matchCount">0</span>):</h3>
+  <div id="matchedImages"></div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      const response = await fetch("http://localhost:8000/upload-photo", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await response.json();
+      const container = document.getElementById("matchedImages");
+      container.innerHTML = "";
+      document.getElementById("matchCount").innerText = result.count;
+
+      if (result.matched) {
+        result.matched.forEach(img => {
+          const div = document.createElement("div");
+          div.innerHTML = `
+            <img src="http://localhost:8000${img.url}" />
+            <p>Distance: ${img.distance}</p>
+          `;
+          container.appendChild(div);
+        });
+      } else {
+        container.innerHTML = "<p>No matches found or error occurred.</p>";
+      }
+    });
+  </script>
+</body>
+</html>
